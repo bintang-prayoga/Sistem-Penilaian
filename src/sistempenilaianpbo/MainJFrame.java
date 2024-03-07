@@ -6,6 +6,7 @@ package sistempenilaianpbo;
 
 import java.sql.*;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 /**
  *
  * @author BoedNoNiwa
@@ -279,11 +280,11 @@ public class MainJFrame extends javax.swing.JFrame {
 
             },
             new String [] {
-                "No. Induk", "Nama", "PemDas", "Basis Data", "PemWeb"
+                "No. Induk", "Nama", "PemDas", "Basis Data", "PemWeb", "Lulus"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.String.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.Integer.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.Integer.class, java.lang.String.class
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -298,8 +299,8 @@ public class MainJFrame extends javax.swing.JFrame {
             panelTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelTableLayout.createSequentialGroup()
                 .addGap(14, 14, 14)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
-                .addGap(229, 229, 229))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 547, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(186, Short.MAX_VALUE))
         );
         panelTableLayout.setVerticalGroup(
             panelTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -369,9 +370,13 @@ public class MainJFrame extends javax.swing.JFrame {
             String sql = "INSERT INTO `siswa` (`no_induk`, `nama`, `mapel1`, `mapel2`, `mapel3`, `lulus`) VALUES ("
                 + nik + ", '" + nama + "', " + mapel1 + ", " + mapel2 + ", " + mapel3 + ", " + lulus + ")";
             
-            stmt.executeUpdate(sql);
-            JOptionPane.showMessageDialog(null, "Statement created successfully!");
-
+            ResultSet rslt = stmt.executeQuery(sql);
+            
+            while(rslt.next()) {
+                JOptionPane.showMessageDialog(null, "Statement created successfully!");
+            }
+            
+            koneksi.close();
             
         }catch(SQLException | InstantiationException | IllegalAccessException | ClassNotFoundException e){
             JOptionPane.showMessageDialog(null, "Error creating statement: " + e.getMessage());
@@ -381,6 +386,42 @@ public class MainJFrame extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
         jTabbedPanel.setSelectedIndex(1);
+        
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+            String username = "root";
+            String password = "";
+            Connection koneksi = DriverManager.getConnection("jdbc:mysql://localhost:3306/penilaian", username, password);
+            Statement stmt = koneksi.createStatement();
+   
+            String sql = "SELECT * FROM siswa";
+            ResultSet rslt = stmt.executeQuery(sql);
+            
+            while(rslt.next()) {
+                String nik = String.valueOf(rslt.getInt("no_induk"));
+                String nama = rslt.getString("nama");
+                String mapel1 = String.valueOf(rslt.getInt("mapel1"));
+                String mapel2 = String.valueOf(rslt.getInt("mapel2"));
+                String mapel3 = String.valueOf(rslt.getInt("mapel3"));
+                String lulus = String.valueOf(rslt.getInt("lulus"));
+                
+                if (rslt.getInt("lulus") == 1) {
+                    lulus = "Lulus";
+                } else {
+                    lulus = "Tidak";
+                };
+                
+                String tbData[] = {nik, nama,  mapel1, mapel2, mapel3, lulus};
+                DefaultTableModel tblModel = (DefaultTableModel)jTable1.getModel();
+                tblModel.addRow(tbData);
+            };
+
+            
+        }catch(SQLException | InstantiationException | IllegalAccessException | ClassNotFoundException e){
+            JOptionPane.showMessageDialog(null, e.getMessage());
+        };
+        
+        
     }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
